@@ -34,6 +34,7 @@ DB_CONFIG_PG = {
     'port': '5432'
 }
 
+#Creating and running queries
 def create_query(message: str, val: int, output_widget):
     output_widget.config(state="normal")
     output_widget.delete("1.0", "end")
@@ -118,7 +119,7 @@ def run_query(query: str, val: int, table_widget):
         for row in results:
             table_widget.insert("", tk.END, values=row)
     else:
-        print("Não foi possível obter resultados")
+        print("It's not possible to get the results")
 
 
 #MySQL and PostgreSQL functions
@@ -200,7 +201,7 @@ def running_ps_query(query_sql, data=None):
     return results, column_descriptions
 
 
-
+#Interface
 root = tk.Tk(screenName = None, baseName=None, className='Text-to-SQL', useTk=1)
 
 
