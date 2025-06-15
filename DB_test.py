@@ -6,7 +6,7 @@ DB_CONFIG_MS = {
     'host': 'localhost',
     'user': 'root',
     'password': '',
-    'database': 'University'
+    'database': 'Orders'
 }
 
 DB_CONFIG_PG = {
@@ -18,10 +18,10 @@ DB_CONFIG_PG = {
 }
 
 
-def executar_query_e_obter_resultados_mysql(query_sql, dados=None):
+def executar_query_e_obter_results_mysql(query_sql, data=None):
     conn = None
     cursor = None
-    resultados = None
+    results = None
 
     try:
         conn = mysql.connector.connect(**DB_CONFIG_MS)
@@ -29,21 +29,21 @@ def executar_query_e_obter_resultados_mysql(query_sql, dados=None):
 
         cursor = conn.cursor()
 
-        cursor.execute(query_sql, dados)
+        cursor.execute(query_sql, data)
 
         if query_sql.strip().upper().startswith("SELECT"):
-            resultados = cursor.fetchall()
-            print(f"Query '{query_sql.strip()}' executada. {len(resultados)} linhas retornadas.")
+            results = cursor.fetchall()
+            print(f"Query '{query_sql.strip()}' executada. {len(results)} linhas retornadas.")
         else:
             conn.commit()
-            resultados = cursor.rowcount
-            print(f"Query '{query_sql.strip()}' executada. {resultados} linhas afetadas.")
+            results = cursor.rowcount
+            print(f"Query '{query_sql.strip()}' executada. {results} linhas afetadas.")
 
     except Error as err:
         print(f"Erro ao executar a query MySQL: {err}")
         if conn:
             conn.rollback()
-        resultados = None 
+        results = None 
 
     finally:
         if cursor:
@@ -53,33 +53,33 @@ def executar_query_e_obter_resultados_mysql(query_sql, dados=None):
             conn.close()
             print("Conexão MySQL fechada.")
     
-    return resultados
+    return results
 
-def executar_query_e_obter_resultados_postgresql(query_sql, dados=None):
+def executar_query_e_obter_results_postgresql(query_sql, data=None):
     conn = None
     cursor = None
-    resultados = None
+    results = None
 
     try:
         conn = psycopg2.connect(**DB_CONFIG_PG)
         print("Conexão estabelecida com sucesso!")
 
         cursor = conn.cursor()
-        cursor.execute(query_sql, dados)
+        cursor.execute(query_sql, data)
 
         if query_sql.strip().upper().startswith("SELECT"):
-            resultados = cursor.fetchall()
-            print(f"Query '{query_sql}' executada. {len(resultados)} linhas retornadas.")
+            results = cursor.fetchall()
+            print(f"Query '{query_sql}' executada. {len(results)} linhas retornadas.")
         else:
             conn.commit()
-            resultados = cursor.rowcount
-            print(f"Query '{query_sql}' executada. {resultados} linhas afetadas.")
+            results = cursor.rowcount
+            print(f"Query '{query_sql}' executada. {results} linhas afetadas.")
 
     except Error as err:
         print(f"Erro ao executar a query: {err}")
         if conn:
             conn.rollback()
-        resultados = None 
+        results = None 
 
     finally:
         if cursor:
@@ -89,21 +89,21 @@ def executar_query_e_obter_resultados_postgresql(query_sql, dados=None):
             conn.close()
             print("Conexão fechada.")
     
-    return resultados
+    return results
 
 if __name__ == "__main__":
     #MySQL
 
-    criar_tabela_query = """
-    select * from student
+    select_query = """
+    select * from Customers
     """
-    dadosmysql = executar_query_e_obter_resultados_mysql(criar_tabela_query)
-    print(dadosmysql)
+    datamysql = executar_query_e_obter_results_mysql(select_query)
+    print(datamysql)
 
     #PostgreSQL
     
-    criar_tabela_query_pg = """
-    select * from student
+    select_query_pg = """
+    select * from Customers
     """
-    dadospostgresql = executar_query_e_obter_resultados_postgresql(criar_tabela_query_pg)
-    print(dadospostgresql)
+    datapostgresql = executar_query_e_obter_results_postgresql(select_query_pg)
+    print(datapostgresql)
