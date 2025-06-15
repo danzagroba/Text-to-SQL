@@ -4,7 +4,7 @@ Project of a local application that generates queries from natural language usin
 
 To run the code just run main.py. The others archives like AI_test.py and DB_test can be ignored.
 
-##Creating database orders in MySQL:
+## Creating database orders in MySQL:
 ```SQL
 CREATE DATABASE Orders;
 USE Orders;
@@ -39,7 +39,7 @@ CREATE TABLE OrderDetails (
 ```
 
 
-##Creating database orders in PostgreSQL:
+## Creating database orders in PostgreSQL:
 ```SQL
 CREATE DATABASE Orders;
 \c Orders;
@@ -73,7 +73,7 @@ CREATE TABLE OrderDetails (
 );
 ```
 
-##Example insert values(work for both MySQL and PostgreSQL)
+## Example insert values(work for both MySQL and PostgreSQL)
 ```SQL
 INSERT INTO Customers (Name, Email) VALUES 
 ('Alice Johnson', 'alice@email.com'),

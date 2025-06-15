@@ -1,6 +1,6 @@
 #Interface
 import tkinter as tk
-from tkinter import Radiobutton, IntVar, W, Label, Entry, Frame, Text
+from tkinter import Radiobutton, IntVar, W, Label, Entry, Frame, Text, ttk
 
 #DBs
 import mysql.connector
@@ -92,16 +92,33 @@ CREATE TABLE OrderDetails (
     output_widget.insert("1.0", query)
     output_widget.config(state="disabled")
     
-def run_query(query: str, val: int):
+def run_query(query: str, val: int, table_widget):
     if (query == ""):
         return
     
     if(val == 1):
-        table = running_ms_query(query)
+        results,column_names = running_ms_query(query)
     else:
-        table = running_ps_query(query)
+        results,column_names = running_ps_query(query)
 
-    print(table)
+    for item in table_widget.get_children():
+        table_widget.delete(item)
+    
+    table_widget["columns"] = ()
+
+    if results is not None and column_names is not None:
+        cols = [col[0] for col in column_names]
+        table_widget["columns"] = cols
+        table_widget.column("#0", width=0, stretch=tk.NO)
+        
+        for col in cols:
+            table_widget.heading(col, text=col)
+            table_widget.column(col, anchor="center", width=100)
+
+        for row in results:
+            table_widget.insert("", tk.END, values=row)
+    else:
+        print("Não foi possível obter resultados")
 
 
 #MySQL and PostgreSQL functions
@@ -109,6 +126,7 @@ def running_ms_query(query_sql, data=None):
     conn = None
     cursor = None
     results = None
+    column_descriptions = None
 
     try:
         conn = mysql.connector.connect(**DB_CONFIG_MS)
@@ -120,6 +138,7 @@ def running_ms_query(query_sql, data=None):
 
         if query_sql.strip().upper().startswith("SELECT"):
             results = cursor.fetchall()
+            column_descriptions = cursor.description
             print(f"Query '{query_sql.strip()}' executed. {len(results)} returned rows.")
         else:
             conn.commit()
@@ -140,12 +159,13 @@ def running_ms_query(query_sql, data=None):
             conn.close()
             print("Conection MySQL closed.")
     
-    return results
+    return results, column_descriptions
 
 def running_ps_query(query_sql, data=None):
     conn = None
     cursor = None
     results = None
+    column_descriptions = None
 
     try:
         conn = psycopg2.connect(**DB_CONFIG_PG)
@@ -156,6 +176,7 @@ def running_ps_query(query_sql, data=None):
 
         if query_sql.strip().upper().startswith("SELECT"):
             results = cursor.fetchall()
+            column_descriptions = cursor.description
             print(f"Query '{query_sql.strip()}' executed. {len(results)} returned rows.")
         else:
             conn.commit()
@@ -166,7 +187,7 @@ def running_ps_query(query_sql, data=None):
         print(f"Error running PostgreSQL query: {err}")
         if conn:
             conn.rollback()
-        results = None 
+        results = err
 
     finally:
         if cursor:
@@ -176,14 +197,14 @@ def running_ps_query(query_sql, data=None):
             conn.close()
             print("Conection PostgreSQL closed.")
     
-    return results
+    return results, column_descriptions
 
 
 
 root = tk.Tk(screenName = None, baseName=None, className='Text-to-SQL', useTk=1)
 
 
-w = Label(root, text='Selecione o banco de data:')
+w = Label(root, text='Select the database:')
 w.pack()
 
 frame_db = Frame(root)
@@ -198,17 +219,32 @@ w.pack()
 e1 = Text(root, height=5, width=40)
 e1.pack()
 
-b1 = tk.Button(root, text='Gerar Query', width=25, command= lambda: create_query(e1.get("1.0", "end").strip(), v.get(), e2))
+b1 = tk.Button(root, text='Create Query', width=25, command= lambda: create_query(e1.get("1.0", "end").strip(), v.get(), e2))
 b1.pack()
 
-w = Label(root, text='Resultado:')
+w = Label(root, text='Result:')
 w.pack()
 
 e2 = Text(root, height=5, width=40)
 e2.pack()
 e2.config(state="disabled")
 
-b2 = tk.Button(root, text='Rodar Query', width=25, command= lambda: run_query(e2.get("1.0", "end"), v.get()))
+b2 = tk.Button(root, text='Run Query', width=25, command= lambda: run_query(e2.get("1.0", "end"), v.get(), table))
 b2.pack()
+
+frame_table = ttk.Frame(root)
+frame_table.pack(pady=10)
+
+scrollbar = ttk.Scrollbar(frame_table)
+scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+table = ttk.Treeview(
+    frame_table,
+    yscrollcommand=scrollbar.set,
+    selectmode="extended"
+)
+table.pack()
+
+scrollbar.config(command=table.yview)
 
 root.mainloop()
